@@ -9,12 +9,17 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/kr/binarydist"
 )
 
+var (
+	dir = flag.String("dir", ".", "output directory")
+)
+
 func usage() {
-	fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
+	fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s OLDBIN NEWBIN\n", os.Args[0])
 	flag.PrintDefaults()
 }
 
@@ -71,10 +76,10 @@ func run() error {
 		return err
 	}
 
-	patchName := fmt.Sprintf("%s-to-%s.bpatch",
+	patchName := filepath.Join(*dir, fmt.Sprintf("%s-to-%s.bpatch",
 		hex.EncodeToString(oldHash.Sum(nil)),
 		hex.EncodeToString(newHash.Sum(nil)),
-	)
+	))
 
 	_, err = os.Stat(patchName)
 	if os.IsNotExist(err) {
