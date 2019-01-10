@@ -5,37 +5,59 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"hash"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/kr/binarydist"
 )
 
-func diff(oldName, newName string) error {
+func diff(oldName, newName, patchName string) error {
 	old, err := os.Open(oldName)
 	if err != nil {
 		return err
 	}
 	defer old.Close()
-	oldHash := sha256.New()
 
 	new, err := os.Open(newName)
 	if err != nil {
 		return err
 	}
 	defer new.Close()
-	newHash := sha256.New()
 
-	patch, err := ioutil.TempFile(".", ".patch")
+	patch, err := os.Create(patchName)
 	if err != nil {
 		return err
 	}
 	defer patch.Close()
-	defer os.Remove(patch.Name())
 
-	if err := binarydist.Diff(io.TeeReader(old, oldHash), io.TeeReader(new, newHash), patch); err != nil {
+	return binarydist.Diff(old, new, patch)
+}
+
+func hashFile(name string) (hash.Hash, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	h := sha256.New()
+	io.Copy(h, f)
+	return h, nil
+}
+
+func run() error {
+	if len(flag.Args()) < 2 {
+		flag.Usage()
+	}
+	oldName, newName := flag.Arg(0), flag.Arg(1)
+
+	oldHash, err := hashFile(oldName)
+	if err != nil {
+		return err
+	}
+	newHash, err := hashFile(newName)
+	if err != nil {
 		return err
 	}
 
@@ -44,14 +66,11 @@ func diff(oldName, newName string) error {
 		hex.EncodeToString(newHash.Sum(nil)),
 	)
 
-	return os.Rename(patch.Name(), patchName)
-}
-
-func run() error {
-	if len(flag.Args()) < 2 {
-		flag.Usage()
+	_, err = os.Stat(patchName)
+	if os.IsNotExist(err) {
+		return diff(oldName, newName, patchName)
 	}
-	return diff(flag.Arg(0), flag.Arg(1))
+	return err
 }
 
 func main() {
