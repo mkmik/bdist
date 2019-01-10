@@ -13,6 +13,15 @@ import (
 	"github.com/kr/binarydist"
 )
 
+func usage() {
+	fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
+	flag.PrintDefaults()
+}
+
+func init() {
+	flag.Usage = usage
+}
+
 func diff(oldName, newName, patchName string) error {
 	old, err := os.Open(oldName)
 	if err != nil {
@@ -49,6 +58,7 @@ func hashFile(name string) (hash.Hash, error) {
 func run() error {
 	if len(flag.Args()) < 2 {
 		flag.Usage()
+		return nil
 	}
 	oldName, newName := flag.Arg(0), flag.Arg(1)
 
