@@ -1,6 +1,5 @@
 # bdist
 
-[![Build Status](https://travis-ci.com/mkmik/bdist.svg?branch=master)](https://travis-ci.com/mkmik/bdist)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mkmik/bdist)](https://goreportcard.com/report/github.com/mkmik/bdist)
 
 ```
