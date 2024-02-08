@@ -1,4 +1,4 @@
-FROM golang:1.11
+FROM golang:1.22
 
 LABEL "name"="golang tools action"
 LABEL "maintainer"="Marko Mikulicic <mkm@bitnami.com>"
